@@ -15,12 +15,15 @@ Image denoiseSeq(const vector<Image> &imSeq) {
   // // --------- HANDOUT  PS03 ------------------------------
   // Basic denoising by computing the average of a sequence of images
   Image output(imSeq.at(0).width(), imSeq.at(0).height(), imSeq.at(0).channels()); // Initialize output image
-  for (int n = 0; n < imSeq.size(); n++) {
-    output = output + imSeq.at(n);         // Iterate over vector and stack images together
+  for (int h = 0; h < output.height(); h++) {
+    for (int w = 0; w < output.width(); w++) {
+      for (int c = 0; c < output.channels(); c++) { // Iterate over pixels in row-major order
+        for (int n = 0; n < imSeq.size(); n++) {
+          output(w, h, c) = output(w, h, c) + (imSeq.at(n)(w, h, c) / imSeq.size()); // Add all values at that pixel
+        }
+      }
+    }
   }
-  Image normalize(imSeq.at(0).width(), imSeq.at(0).height(), imSeq.at(0).channels());
-  normalize.set_color(imSeq.size()); // Make image full of vector length to divide by to get average of images
-  output = output / normalize;
   return output; // Return output image
 }
 
@@ -28,13 +31,55 @@ Image logSNR(const vector<Image> &imSeq, float scale) {
   // // --------- HANDOUT  PS03 ------------------------------
   // returns an image visualizing the per-pixel and
   // per-channel log of the signal-to-noise ratio scaled by scale.
-  return Image(1, 1, 1);
+  Image avg = denoiseSeq(imSeq); // Get the Expected Value (E[i]) of each pixel
+  Image output(avg.width(), avg.height(), avg.channels()); // Initialize output image
+
+  for (int h = 0; h < output.height(); h++) {  // Iterate over pixels in row-major order
+    for (int w = 0; w < output.width(); w++) {
+      for (int c = 0; c < output.channels(); c++) {
+
+        float sigma_sqr = 0.0f;                   // Initialize value for sigma squared (variance)
+        for (int n = 0; n < imSeq.size(); n++) {
+          sigma_sqr += pow(imSeq.at(n)(w, h, c) - avg(w, h, c), 2); // square difference between pixel and the avg
+        }
+        sigma_sqr /= (imSeq.size() - 1 + 0.000001); // Divide by n-1, sigma_sqr is now equal to variance
+
+        output(w, h, c) = scale * 10.0f * log10(avg(w, h, c) * avg(w, h, c) / (sigma_sqr + 0.000001)); // Add log SNR to image
+      }
+    }
+  }
+  return output; // Return output image
 }
 
 vector<int> align(const Image &im1, const Image &im2, int maxOffset) {
   // // --------- HANDOUT  PS03 ------------------------------
   // returns the (x,y) offset that best aligns im2 to match im1.
-  return vector<int>();
+  vector<int> output;
+
+  float best_diff = im1.height() * im1.width() * im1.channels() * 2.0f; // Initialize best sum of squared pixel difference counter
+  int best_offset_x = 0, best_offset_y = 0; // Initialize best offset counters
+
+  for (int y = -1 * maxOffset; y <= maxOffset; y++) { // Brute force over all offset values
+    for (int x = -1 * maxOffset; x <= maxOffset; x++) {
+      
+      float difference = 0.0f; // Initialize variable to hold sum of squared pixel differences
+      for (int h = maxOffset; h < im1.height() + maxOffset; h++) {  // Iterate over pixels in row-major order
+        for (int w = maxOffset; w < im1.width() + maxOffset; w++) {
+          for (int c = 0; c < im1.channels(); c++) {
+            difference += pow(im1.smartAccessor(w, h, c) - im2.smartAccessor(w + x, h + y, c), 2); // squared pixel difference
+          }
+        }
+      }
+      if (difference < best_diff) {
+        best_diff = difference;     // Keep track of the best option so far
+        best_offset_x = x;
+        best_offset_y = y; 
+      }
+    }
+  }
+  output.push_back(best_offset_x);
+  output.push_back(best_offset_y);
+  return output; // Return vector of the best x and y translations
 }
 
 Image alignAndDenoise(const vector<Image> &imSeq, int maxOffset) {

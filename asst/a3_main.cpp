@@ -22,27 +22,47 @@ using namespace std;
 // This is a way for you to test your functions.
 // We will only grade the contents of demosaic.cpp and align.cpp
 int main() {
-  cout << "nothing done in a3_main.cpp, debug me !" << endl;
-  // // Denoise ---------------------------
-  // // Load sequence
-  // vector<Image> seq;
-  // int n_images = 4;
-  // for (int i = 1; i <= n_images; ++i) {
-  //     ostringstream fname;
-  //     // fname << "./Input/aligned-ISO400/1D2N-iso400-";
-  //     fname << "./Input/aligned-ISO3200/1D2N-iso3200-";
-  //     fname << i;
-  //     fname << ".png";
-  //     seq.push_back(Image(fname.str()));
-  // }
+  clock_t start = clock();
+  // cout << "nothing done in a3_main.cpp, debug me !" << endl;
+  // Denoise ---------------------------
+  // Load sequence
+  vector<Image> seq0;
+  int n_images0 = 16;
+  for (int i = 1; i <= n_images0; ++i) {
+      ostringstream fname0;
+      fname0 << "./Input/aligned-ISO3200/1D2N-iso3200-";
+      fname0 << i;
+      fname0 << ".png";
+      seq0.push_back(Image(fname0.str()));
+  }
+  vector<Image> seq1;
+  int n_images1 = 16;
+  for (int i = 1; i <= n_images1; ++i) {
+      ostringstream fname1;
+      fname1 << "./Input/aligned-ISO400/1D2N-iso400-";
+      fname1 << i;
+      fname1 << ".png";
+      seq1.push_back(Image(fname1.str()));
+  }
+  // Denoise
+  // Image out0 = denoiseSeq(seq0);
+  // out0.write("./Output/denoised_3200_16.png");
+  // Image out1 = denoiseSeq(seq1);
+  // out1.write("./Output/denoised_400_16.png");
+
   //
-  // // Denoise
-  // Image out = denoiseSeq(seq);
-  // out.write("./Output/denoised.png");
-  //
-  // Image SNRIm = logSNR(seq,1/30.0);
-  // SNRIm.write("./Output/snr_map.png");
-  //
+  Image SNRIm0 = logSNR(seq0, 1/30.0);
+  SNRIm0.write("./Output/snr_map_3200.png");
+  Image SNRIm1 = logSNR(seq1, 1/30.0);
+  SNRIm1.write("./Output/snr_map_400.png");
+
+  Image first(100, 100, 3);
+  Image second(100, 100, 3);
+  first.create_rectangle(40, 40, 50, 60, 1.0f, 1.0f, 1.0f);
+  second.create_rectangle(60, 50, 70, 70, 1.0f, 1.0f, 1.0f);
+  vector<int> c = align(first, second, 20);
+  cout << c.at(0) << ", " << c.at(1) << endl;
+  
   // // Demosaic ---------------------------
   // Image raw("./Input/raw/signs-small.png");
   // Image green = basicGreen(raw, 1);
@@ -61,6 +81,8 @@ int main() {
   // rgb2.write("./Output/Sergey_split.png");
   // Image rgbAlign = sergeyRGB(sergeyImg,10);
   // rgbAlign.write("./Output/Sergey_aligned.png");
-
+  clock_t end = clock();
+  double duration = (end - start) * 1.0f / CLOCKS_PER_SEC;
+  cout << "a3_main.cpp runtime: " << duration << "s" << endl;
   return 0;
 }
