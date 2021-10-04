@@ -77,6 +77,8 @@ int main() {
   
   // // Demosaic ---------------------------
   Image raw("./Input/raw/signs-small.png");
+  // Image green = edgeBasedGreen(raw, 1);
+  // green.write("./Output/demosaic_edgebased_green.png"); // edge based green demosaicing
   // Image im1 = basicRorB(raw, 0, 0);
   // Image blue = basicRorB(raw, 1, 1);
   // red.write("./Output/demosaic_red.png");
@@ -85,8 +87,10 @@ int main() {
   // red.write("./Output/demosaic_red.png");
   // Image blue = basicRorB(raw, 0, 0);
   // blue.write("./Output/demosaic_blue.png");
-  Image rgb = basicDemosaic(raw, 1, 1, 1, 0, 0);
-  rgb.write("./Output/demosaiced.png");
+  // Image rgb = basicDemosaic(raw, 1, 1, 1, 0, 0);
+  // rgb.write("./Output/demosaiced.png");
+  Image rgb_edgebased = edgeBasedGreenDemosaic(raw, 1, 1, 1, 0, 0);
+  rgb_edgebased.write("./Output/demosaiced_edgebased.png");
   //
   //
   // // Sergey ---------------------------
