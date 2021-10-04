@@ -77,14 +77,16 @@ int main() {
   
   // // Demosaic ---------------------------
   Image raw("./Input/raw/signs-small.png");
-  Image green = basicGreen(raw, 1);
-  green.write("./Output/demosaic_green.png");
+  // Image im1 = basicRorB(raw, 0, 0);
+  // Image blue = basicRorB(raw, 1, 1);
+  // red.write("./Output/demosaic_red.png");
+  // blue.write("./Output/demosaic_blue.png");
   // Image red = basicRorB(raw, 1, 1);
   // red.write("./Output/demosaic_red.png");
   // Image blue = basicRorB(raw, 0, 0);
   // blue.write("./Output/demosaic_blue.png");
-  // Image rgb = basicDemosaic(raw, 1, 1,1,0,0);
-  // rgb.write("./Output/demosaiced.png");
+  Image rgb = basicDemosaic(raw, 1, 1, 1, 0, 0);
+  rgb.write("./Output/demosaiced.png");
   //
   //
   // // Sergey ---------------------------

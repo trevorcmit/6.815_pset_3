@@ -19,34 +19,34 @@ Image basicGreen(const Image &raw, int offset) {
   Image output(raw.width(), raw.height(), 1); // Initialize 1 channel output image
 
   for (int h = 0; h < output.height(); h++) {
-    output(0, h, 0) = raw(0, h, 1);                                   // Copy Left edge column
-    output(output.width() - 1, h, 0) = raw(output.width() - 1, h, 1); // Copy Right edge column
+    output(0, h, 0) = raw(0, h, 0);                                   // Copy Left edge column
+    output(output.width() - 1, h, 0) = raw(output.width() - 1, h, 0); // Copy Right edge column
   }
   for (int w = 0; w < output.width(); w++) {
-    output(w, 0, 0) = raw(w, 0, 1);                                     // Copy Top edge row
-    output(w, output.height() - 1, 0) = raw(w, output.height() - 1, 1); // Copy Bottom edge row
+    output(w, 0, 0) = raw(w, 0, 0);                                     // Copy Top edge row
+    output(w, output.height() - 1, 0) = raw(w, output.height() - 1, 0); // Copy Bottom edge row
   }
 
   if (offset = 0) {
     for (int h = 1; h < output.height() - 1; h++) {  // Iterate over pixels in row-major order
       for (int w = 1; w < output.width() - 1; w++) {
         if (w % 2 == h % 2) {
-          output(w, h, 0) = raw(w, h, 1); // Top left corner is green
+          output(w, h, 0) = raw(w, h, 0); // Top left corner is green
         }
         else {
-          output(w, h, 0) = (raw(w, h+1, 1) + raw(w, h-1, 1) + raw(w-1, h, 1) + raw(w+1, h, 1)) / 4.0f;
+          output(w, h, 0) = (raw(w, h + 1, 0) + raw(w, h - 1, 0) + raw(w - 1, h, 0) + raw(w + 1, h, 0)) / 4.0f;
         }
       }
     }
   }
-  else {
+  else if (offset = 1) {
     for (int h = 1; h < output.height() - 1; h++) {  // Iterate over pixels in row-major order
       for (int w = 1; w < output.width() - 1; w++) {
         if (w % 2 == h % 2) { // One to right of top left corner
-           output(w, h, 0) = (raw(w, h+1, 1) + raw(w, h-1, 1) + raw(w-1, h, 1) + raw(w+1, h, 1)) / 4.0f;
+          output(w, h, 0) = (raw(w, h + 1, 0) + raw(w, h - 1, 0) + raw(w - 1, h, 0) + raw(w + 1, h, 0)) / 4.0f;
         }
         else {
-          output(w, h, 0) = raw(w, h, 1);
+          output(w, h, 0) = raw(w, h, 0);
         }
       }
     }
@@ -57,9 +57,36 @@ Image basicGreen(const Image &raw, int offset) {
 Image basicRorB(const Image &raw, int offsetX, int offsetY) {
   // --------- HANDOUT  PS03 ------------------------------
   //  Takes as input a raw image and returns a single-channel
-  //  2D image corresponding to the red or blue channel using simple
-  //  interpolation
-  return raw;
+  //  2D image corresponding to the red or blue channel using simple interpolation
+  Image output(raw.width(), raw.height(), 1); // Initialize 1 channel output image
+
+  for (int h = 0; h < output.height(); h++) {
+    output(0, h, 0) = raw(0, h, 0);                                   // Copy Left edge column
+    output(output.width() - 1, h, 0) = raw(output.width() - 1, h, 0); // Copy Right edge column
+  }
+  for (int w = 0; w < output.width(); w++) {
+    output(w, 0, 0) = raw(w, 0, 0);                                     // Copy Top edge row
+    output(w, output.height() - 1, 0) = raw(w, output.height() - 1, 0); // Copy Bottom edge row
+  }
+
+  for (int h = 1; h < output.height() - 1; h++) {  // Iterate over pixels in row-major order
+    for (int w = 1; w < output.width() - 1; w++) {
+      if (w % 2 == offsetX && h % 2 == offsetY) {  // Case 1: B or R is present at that pixel
+        output(w, h, 0) = raw(w, h, 0);
+      }
+      else if (w % 2 != offsetX && h % 2 == offsetY) { // Case 2: X not aligned, take left/right neighbors
+        output(w, h, 0) = (raw(w - 1, h, 0) + raw(w + 1, h, 0)) / 2.0;
+      }
+      else if (w % 2 == offsetX && h % 2 != offsetY) { // Case 3: Y not aligned, take up/down neighbors
+        output(w, h, 0) = (raw(w, h - 1, 0) + raw(w, h + 1, 0)) / 2.0;
+      }
+      else {                                         // Case 4: Neither aligned, take average of corners
+        output(w, h, 0) = (raw(w - 1, h - 1, 0) + raw(w - 1, h + 1, 0) + raw(w + 1, h - 1, 0) + raw(w + 1,h + 1, 0)) / 4.0; 
+      }
+    }
+  }
+
+  return output;
 }
 
 Image basicDemosaic(const Image &raw, int offsetGreen, int offsetRedX,
@@ -67,7 +94,18 @@ Image basicDemosaic(const Image &raw, int offsetGreen, int offsetRedX,
   // --------- HANDOUT  PS03 ------------------------------
   // takes as input a raw image and returns an rgb image
   // using simple interpolation to demosaic each of the channels
-  return raw;
+  Image green = basicGreen(raw, offsetGreen);
+  Image blue  = basicRorB(raw, offsetBlueX, offsetBlueY); // Demosaic R, G, and B individually
+  Image red   = basicRorB(raw, offsetRedX, offsetRedY);
+  Image output(raw.width(), raw.height(), 3);
+  for (int h = 0; h < output.height(); h++) {  // Iterate over pixels in row-major order
+    for (int w = 0; w < output.width(); w++) {
+      output(w, h, 0) = red(w, h, 0);   // Red channel
+      output(w, h, 1) = green(w, h, 0); // Green channel
+      output(w, h, 2) = blue(w, h, 0);  // Blue channel
+    }
+  }
+  return output;
 }
 
 Image edgeBasedGreen(const Image &raw, int offset) {
