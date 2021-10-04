@@ -86,7 +86,31 @@ Image alignAndDenoise(const vector<Image> &imSeq, int maxOffset) {
   // // --------- HANDOUT  PS03 ------------------------------
   // Registers all images to the first one in a sequence and outputs
   // a denoised image even when the input sequence is not perfectly aligned.
-  return Image(1, 1, 1);
+  Image output(imSeq.at(0).width(), imSeq.at(0).height(), imSeq.at(0).channels());
+  for (int h = 0; h < output.height(); h++) {  // Iterate over pixels in row-major order
+    for (int w = 0; w < output.width(); w++) {
+      for (int c = 0; c < output.channels(); c++) { // Making new object and iterating guarantees hard copy is made
+        output(w, h, c) = imSeq.at(0)(w, h, c) / imSeq.size();
+      }
+    }
+  }
+  cout << "Image #1 loaded, beginning aligning and denoising..." << endl;;
+
+  for (int n = 1; n < imSeq.size(); n++) {
+    vector<int> offset = align(imSeq.at(0), imSeq.at(n), maxOffset); // Use align as helper function to get x and y offsets
+    for (int h = 0; h < output.height(); h++) {  // Iterate over pixels in row-major order
+      for (int w = 0; w < output.width(); w++) {
+        for (int c = 0; c < output.channels(); c++) { 
+          output(w, h, c) = output(w, h, c) + (
+            imSeq.at(n).smartAccessor(w + offset.at(0), h + offset.at(1), c) / imSeq.size()
+          );
+        } // We divide by imSeq.size() so we don't need to average at the end, just doing it while iterating
+      }
+    }
+    cout << "Aligned Image #" << n + 1 << " with [" << offset.at(0) << "," << offset.at(1) << "]..." << endl;
+  }
+  cout << "Finished!" << endl;
+  return output;
 }
 
 Image split(const Image &sergeyImg) {
