@@ -76,7 +76,7 @@ int main() {
   // out0.write("./Output/green_alignanddenoise_9im_20.png");
   
   // // Demosaic ---------------------------
-  Image raw("./Input/raw/signs-small.png");
+  // Image raw("./Input/raw/signs-small.png");
   // Image green = edgeBasedGreen(raw, 1);
   // green.write("./Output/demosaic_edgebased_green.png"); // edge based green demosaicing
   // Image im1 = basicRorB(raw, 0, 0);
@@ -89,16 +89,18 @@ int main() {
   // blue.write("./Output/demosaic_blue.png");
   // Image rgb = basicDemosaic(raw, 1, 1, 1, 0, 0);
   // rgb.write("./Output/demosaiced.png");
-  Image rgb_edgebased = improvedDemosaic(raw, 1, 1, 1, 0, 0);
-  rgb_edgebased.write("./Output/demosaiced_improved.png");
+  // Image rgb_edgebased = improvedDemosaic(raw, 1, 1, 1, 0, 0);
+  // rgb_edgebased.write("./Output/demosaiced_improved.png");
   //
   //
   // // Sergey ---------------------------
-  // Image sergeyImg("./Input/Sergey/00911v_third.png");
-  // Image rgb2 = split(sergeyImg);
-  // rgb2.write("./Output/Sergey_split.png");
-  // Image rgbAlign = sergeyRGB(sergeyImg,10);
-  // rgbAlign.write("./Output/Sergey_aligned.png");
+  Image sergeyImg("./Input/Sergey/00911v_third.png");
+  Image rgb2 = split(sergeyImg);
+  rgb2.write("./Output/Sergey_split.png");
+  Image rgbAlign = sergeyRGB(sergeyImg, 30);
+  rgbAlign.write("./Output/Sergey_aligned.png");
+
+
   clock_t end = clock();
   double duration = (end - start) * 1.0f / CLOCKS_PER_SEC;
   cout << "a3_main.cpp runtime: " << duration << "s" << endl;

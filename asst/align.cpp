@@ -94,7 +94,7 @@ Image alignAndDenoise(const vector<Image> &imSeq, int maxOffset) {
       }
     }
   }
-  cout << "Image #1 loaded, beginning aligning and denoising..." << endl;;
+  cout << "Image #1 loaded, beginning aligning and denoising..." << endl;
 
   for (int n = 1; n < imSeq.size(); n++) {
     vector<int> offset = align(imSeq.at(0), imSeq.at(n), maxOffset); // Use align as helper function to get x and y offsets
@@ -116,16 +116,43 @@ Image alignAndDenoise(const vector<Image> &imSeq, int maxOffset) {
 Image split(const Image &sergeyImg) {
   // --------- HANDOUT  PS03 ------------------------------
   // 6.865 only:
-  // split a Sergey images to turn it into one 3-channel image.
-  return Image(1, 1, 1);
+  Image output(sergeyImg.width(), floor(sergeyImg.height() / 3), 3); // Floor 1/3 of input image for height
+
+  for (int h = 0; h < output.height(); h++) {   // Iterate over pixels in row-major order
+    for (int w = 0; w < output.width(); w++) {
+      output(w, h, 2) = sergeyImg(w, h);        // Blue is on top
+      output(w, h, 1) = sergeyImg(w, h + floor(sergeyImg.height() / 3));    // Green in middle
+      output(w, h, 0) = sergeyImg(w, h + 2 * floor(sergeyImg.height() / 3));    // Red on bottom
+    }
+  }
+  return output; // Return output image with floored height value
 }
 
 Image sergeyRGB(const Image &sergeyImg, int maxOffset) {
   // // --------- HANDOUT  PS03 ------------------------------
-  // 6.865 only:
-  // aligns the green and blue channels of your rgb channel of a sergey
-  // image to the red channel. This should return an aligned RGB image
-  return Image(1, 1, 1);
+  Image sergey_RGB = split(sergeyImg);                      // Perform split of input image 
+  Image red(sergey_RGB.width(), sergey_RGB.height(), 1);    // Initialize one channel R, G and B images
+  Image green(sergey_RGB.width(), sergey_RGB.height(), 1);
+  Image blue(sergey_RGB.width(), sergey_RGB.height(), 1);
+  Image output(sergey_RGB.width(), sergey_RGB.height(), 3); // Initialize RGB output
+
+  for (int h = 0; h < sergey_RGB.height(); h++) {   // Iterate over pixels in row-major order
+    for (int w = 0; w < sergey_RGB.width(); w++) {
+      red(w, h, 0)   = sergey_RGB(w, h, 0);
+      green(w, h, 0) = sergey_RGB(w, h, 1); // Put split output into single channel R, G, and B images
+      blue(w, h, 0)  = sergey_RGB(w, h, 2);
+    }
+  }
+  vector<int> G_to_R = align(red, green, maxOffset), B_to_R = align(red, blue, maxOffset); // Align G and B to R channel
+
+  for (int h = 0; h < output.height(); h++) {  // Iterate over pixels in row-major order
+    for (int w = 0; w < output.width(); w++) {
+        output(w, h, 0) = red.smartAccessor(w, h, 0); // Apply offsets found by align function
+        output(w, h, 1) = green.smartAccessor(w + G_to_R.at(0), h + G_to_R.at(1), 0);
+        output(w, h, 2) = blue.smartAccessor(w + B_to_R.at(0), h + B_to_R.at(1), 0);
+    }
+  }
+  return output; // Return output image
 }
 
 /**************************************************************
