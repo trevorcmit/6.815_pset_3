@@ -89,8 +89,8 @@ int main() {
   // blue.write("./Output/demosaic_blue.png");
   // Image rgb = basicDemosaic(raw, 1, 1, 1, 0, 0);
   // rgb.write("./Output/demosaiced.png");
-  Image rgb_edgebased = edgeBasedGreenDemosaic(raw, 1, 1, 1, 0, 0);
-  rgb_edgebased.write("./Output/demosaiced_edgebased.png");
+  Image rgb_edgebased = improvedDemosaic(raw, 1, 1, 1, 0, 0);
+  rgb_edgebased.write("./Output/demosaiced_improved.png");
   //
   //
   // // Sergey ---------------------------

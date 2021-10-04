@@ -82,7 +82,6 @@ Image basicRorB(const Image &raw, int offsetX, int offsetY) {
       }
     }
   }
-
   return output;
 }
 
@@ -172,15 +171,20 @@ Image edgeBasedGreenDemosaic(const Image &raw, int offsetGreen, int offsetRedX,
     }
   }
   return output; 
-  return raw;
 }
 
 Image greenBasedRorB(const Image &raw, Image &green, int offsetX, int offsetY) {
   // --------- HANDOUT  PS03 ------------------------------
-  // Takes as input a raw image and returns a single-channel
-  // 2D image corresponding to the red or blue channel using green based
-  // interpolation
-  return raw;
+  // Perform interpolation on (Raw (R or B) - Green), then add back Green 
+  Image green_3D(raw.width(), raw.height(), 3);
+  for (int h = 0; h < green.height(); h++) {
+    for (int w = 0; w < green.width(); w++) {
+      for (int c = 0; c < 3; c++) {
+        green_3D(w, h, c) = green(w, h, 0); // Construct three channel version of green
+      }                                     // for subtraction from 3D raw input image
+    }
+  }
+  return basicRorB(raw - green_3D, offsetX, offsetY) + green; // Perform basicRorB on difference between (R & G) or (B & G)
 }
 
 Image improvedDemosaic(const Image &raw, int offsetGreen, int offsetRedX,
@@ -189,5 +193,16 @@ Image improvedDemosaic(const Image &raw, int offsetGreen, int offsetRedX,
   // Takes as input a raw image and returns an rgb image
   // using edge-based green demosaicing for the green channel and
   // simple green based demosaicing of the red and blue channels
-  return raw;
+  Image green = edgeBasedGreen(raw, offsetGreen); // Used edge-based green demosaicing
+  Image blue  = greenBasedRorB(raw, green, offsetBlueX, offsetBlueY); // Demosaic R, G, and B individually
+  Image red   = greenBasedRorB(raw, green, offsetRedX, offsetRedY);
+  Image output(raw.width(), raw.height(), 3);
+  for (int h = 0; h < output.height(); h++) {  // Iterate over pixels in row-major order
+    for (int w = 0; w < output.width(); w++) {
+      output(w, h, 0) = red(w, h, 0);   // Red channel
+      output(w, h, 1) = green(w, h, 0); // Green channel
+      output(w, h, 2) = blue(w, h, 0);  // Blue channel
+    }
+  }
+  return output; 
 }
