@@ -194,7 +194,7 @@ vector<int> align_faster(const Image &im1, const Image &im2, int maxOffset) {
         best_offset_x = x;
         best_offset_y = current_offset_y; 
       } 
-      current_offset_y += 1;
+      current_offset_y += 1; // Iterate current y offset for the while loop
     } 
   }
 
