@@ -155,6 +155,54 @@ Image sergeyRGB(const Image &sergeyImg, int maxOffset) {
   return output; // Return output image
 }
 
+vector<int> align_faster(const Image &im1, const Image &im2, int maxOffset) {
+  // // --------- HANDOUT  PS03 ------------------------------
+  // returns the (x,y) offset that best aligns im2 to match im1.
+  vector<int> output;
+  float best_diff = im1.height() * im1.width() * im1.channels() * 2.0f; // Initialize best sum of squared pixel difference counter
+  int best_offset_x = 0, best_offset_y = 0; // Initialize best offset counters
+
+  for (int x = -1 * maxOffset; x <= maxOffset; x++) {
+    int current_offset_y = -1 * maxOffset; // Set current offset in the Y direction
+    Image current(im1.width(), im1.height(), im1.channels());
+    for (int h = 0; h < current.height(); h++) {
+      for (int w = 0; w < current.width(); w++) { // Fill current image with the starting offset value
+        for (int c = 0; c < current.channels(); c++) {
+          current(w, h, c) = im2.smartAccessor(w + x, h + current_offset_y, c);
+        }
+      }
+    }
+
+    while (current_offset_y <= maxOffset) { // While loop to iterate over values of Y offset
+
+      float difference = 0.0f; // Initialize sum to determine success of offset
+      for (int h = 0; h < current.height(); h++) {
+        for (int w = 0; w < current.width(); w++) { // Iterate over current offset to get differences for summation
+          for (int c = 0; c < current.channels(); c++) {
+            difference += pow(im1.smartAccessor(w, h, c) - current.smartAccessor(w, h, c), 2); // Get difference
+          }
+        }
+      }
+      for (int w = 0; w < current.width(); w++) {       // Iterate over width and channels to remove vector values
+        for (int c = 0; c < current.channels(); c++) {  // and add new ones. 
+          current.image_data.erase(current.image_data.begin()); // Remove first row
+          current.image_data.push_back(im2.smartAccessor(w + x, current.height() + current_offset_y, c)); // Add new bottom row
+        }
+      }
+      if (difference < best_diff) { // Update best difference if it is better
+        best_diff = difference;  
+        best_offset_x = x;
+        best_offset_y = current_offset_y; 
+      } 
+      current_offset_y += 1;
+    } 
+  }
+
+  output.push_back(best_offset_x);
+  output.push_back(best_offset_y);
+  return output; // Return vector of the best x and y translations
+}
+
 /**************************************************************
  //               DON'T EDIT BELOW THIS LINE                //
  *************************************************************/

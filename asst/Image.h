@@ -98,6 +98,7 @@ public:
   float smartAccessor(int x, int y, int z, bool clamp = false) const;
   // ------------------------------------------------------
 
+  std::vector<float> image_data;
   // The "private" section contains functions and variables that cannot be
   // accessed from outside the class.
 private:
@@ -108,7 +109,7 @@ private:
 
   // This vector stores the values of the pixels. A vector in C++ is an array
   // that manages its own memory
-  std::vector<float> image_data;
+  // std::vector<float> image_data;
 
   // Helper functions for reading and writing
   // Conversion Policy:

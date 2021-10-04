@@ -22,7 +22,8 @@ using namespace std;
 // This is a way for you to test your functions.
 // We will only grade the contents of demosaic.cpp and align.cpp
 int main() {
-  clock_t start = clock();
+  // clock_t start = clock();
+
   // cout << "nothing done in a3_main.cpp, debug me !" << endl;
   // Denoise ---------------------------
   // Load sequence
@@ -56,12 +57,27 @@ int main() {
   // Image SNRIm1 = logSNR(seq1, 1/30.0);
   // SNRIm1.write("./Output/snr_map_400.png");
 
-  // Image first(100, 100, 3);
-  // Image second(100, 100, 3);
-  // first.create_rectangle(40, 40, 60, 50, 1.0f, 1.0f, 1.0f);
-  // second.create_rectangle(50, 60, 70, 70, 1.0f, 1.0f, 1.0f);
-  // vector<int> c = align(first, second, 20);
-  // cout << c.at(0) << ", " << c.at(1) << endl;
+  // clock_t end = clock();
+  // double duration = (end - start) * 1.0f / CLOCKS_PER_SEC;
+  // cout << "a3_main.cpp runtime: " << duration << "s" << endl;
+
+  Image first(100, 100, 3);
+  Image second(100, 100, 3);
+  first.create_rectangle(40, 40, 60, 50, 1.0f, 1.0f, 1.0f);
+  second.create_rectangle(50, 60, 70, 70, 1.0f, 1.0f, 1.0f);
+  clock_t start0 = clock();
+  vector<int> c0 = align(first, second, 20);
+  clock_t end0 = clock();
+  clock_t start1 = clock();
+  vector<int> c1 = align_faster(first, second, 20);
+  clock_t end1 = clock();
+
+  // clock_t end = clock();
+  double duration0 = (end0 - start0) * 1.0f / CLOCKS_PER_SEC;
+  double duration1 = (end1 - start1) * 1.0f / CLOCKS_PER_SEC;
+  cout << "normal: " << duration0 << ", faster: " << duration1 << endl;
+  cout << c0.at(0) << " " << c0.at(1) << endl;
+  cout << c1.at(0) << " " << c1.at(1) << endl;
 
   // vector<Image> seq1;
   // int n_images1 = 9;
@@ -94,15 +110,15 @@ int main() {
   //
   //
   // // Sergey ---------------------------
-  Image sergeyImg("./Input/Sergey/00911v_third.png");
-  Image rgb2 = split(sergeyImg);
-  rgb2.write("./Output/Sergey_split.png");
-  Image rgbAlign = sergeyRGB(sergeyImg, 30);
-  rgbAlign.write("./Output/Sergey_aligned.png");
+  // Image sergeyImg("./Input/Sergey/00911v_third.png");
+  // Image rgb2 = split(sergeyImg);
+  // rgb2.write("./Output/Sergey_split.png");
+  // Image rgbAlign = sergeyRGB(sergeyImg, 30);
+  // rgbAlign.write("./Output/Sergey_aligned.png");
 
 
-  clock_t end = clock();
-  double duration = (end - start) * 1.0f / CLOCKS_PER_SEC;
-  cout << "a3_main.cpp runtime: " << duration << "s" << endl;
-  return 0;
+  // clock_t end = clock();
+  // double duration = (end - start) * 1.0f / CLOCKS_PER_SEC;
+  // cout << "a3_main.cpp runtime: " << duration << "s" << endl;
+  // return 0;
 }
